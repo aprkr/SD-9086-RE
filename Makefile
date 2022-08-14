@@ -1,8 +1,16 @@
 SDCC ?= sdcc
-CFLAGS = --model-large --std-c99
+FLASH_SIZE ?= 32
+ifeq ($(FLASH_SIZE), 16)
+    CFLAGS = --model-large --std-sdcc99 -DFLASH_SIZE_16K
+    BIN_SIZE = 16384
+else
+    CFLAGS = --model-large --std-sdcc99
+    BIN_SIZE = 32768
+endif
 LDFLAGS = --xram-loc 0x8000 --xram-size 2048 --model-large
 VPATH = src/
 OBJS = main.rel usb.rel usb_desc.rel radio.rel
+
 
 SDCC_VER := $(shell $(SDCC) -v | grep -Po "\d\.\d\.\d" | sed "s/\.//g")
 
@@ -14,7 +22,7 @@ sdcc:
 dongle.bin: $(OBJS)
 	$(SDCC) $(LDFLAGS) $(OBJS:%=bin/%) -o bin/dongle.ihx
 	objcopy -I ihex bin/dongle.ihx -O binary bin/dongle.bin
-	objcopy --pad-to 26622 --gap-fill 255 -I ihex bin/dongle.ihx -O binary bin/dongle.formatted.bin
+	objcopy --pad-to $(BIN_SIZE) --gap-fill 255 -I ihex bin/dongle.ihx -O binary bin/dongle.formatted.bin
 	objcopy -I binary bin/dongle.formatted.bin -O ihex bin/dongle.formatted.ihx
 
 %.rel: %.c
@@ -28,6 +36,9 @@ install:
 
 spi_install:
 	./prog/teensy-flasher/python/spi-flash.py bin/dongle.bin
+
+arduino_install:
+	./prog/arduino-flasher/flash.py bin/dongle.formatted.bin
 
 logitech_install:
 	./prog/usb-flasher/logitech-usb-flash.py bin/dongle.formatted.bin bin/dongle.formatted.ihx

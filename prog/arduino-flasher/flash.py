@@ -42,11 +42,21 @@ logging.info('Connecting to Arduino over serial at {0}'.format(comport))
 ser = serial.Serial(port=comport, baudrate=115200, timeout=5)
 time.sleep(2)
 
-ser.write(bytearray([0x02, numPages]))
+pagesToWrite = []
 for x in range(int(numPages)):
+  page = data[x*PAGE_SIZE:(x+1)*PAGE_SIZE]
+  if (page.count(0xFF) == PAGE_SIZE):
+    continue
+  else:
+    pagesToWrite.append(x)
+
+ser.write(bytearray([0x02, len(pagesToWrite)]))
+for x in pagesToWrite:
+  ser.write(bytearray([x]))
+  page = data[x*PAGE_SIZE:(x+1)*PAGE_SIZE]
   for y in range(int(PAGE_SIZE / BUFFER_SIZE)):
-    page = data[x*PAGE_SIZE+BUFFER_SIZE*y:x*PAGE_SIZE+BUFFER_SIZE*(y+1)]
-    ser.write(page)
+    pageBuf = page[y*BUFFER_SIZE:(y+1)*BUFFER_SIZE]
+    ser.write(pageBuf)
     ser.read(1)
 
 
@@ -55,7 +65,7 @@ read = bytes()
 success = True
 for x in range(PAGE_SIZE * numPages):
     read += ser.read(1)
-for x in range(numPages):
+for x in pagesToWrite:
   if (data[x*PAGE_SIZE:(x+1)*PAGE_SIZE] != read[x*PAGE_SIZE:(x+1)*PAGE_SIZE]):
     success = False
     print("Data mismatch at page: " + str(x))

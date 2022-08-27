@@ -1,3 +1,6 @@
+#include <Arduino.h>
+#include <SPI.h>
+
 #define SERIAL_BAUD 115200
 #define BUF_SIZE 32
 #define BUF_OK 0x01

@@ -108,6 +108,9 @@ enum radio_mode_t
 
   // Generic promiscuous mode
   promiscuous_generic = 2,
+
+  // my prom
+  myprom = 3,
 };
 
 // Radio mode

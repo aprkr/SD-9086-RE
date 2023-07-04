@@ -72,11 +72,11 @@ class nrf24:
 
   # Put the radio in pseudo-promiscuous mode
   def enter_promiscuous_mode(self, prefix=[]):
-    self.send_usb_command(ENTER_PROMISCUOUS_MODE, [len(prefix)]+list(map(ord, prefix)))
+    self.send_usb_command(ENTER_PROMISCUOUS_MODE, [len(prefix)]+list(prefix))
     self.dongle.read(0x81, 64, timeout=nrf24.usb_timeout)
     if len(prefix) > 0:
       logging.debug('Entered promiscuous mode with address prefix {0}'.
-          format(':'.join('{:02X}'.format(ord(b)) for b in prefix)))
+          format(':'.join('{:02X}'.format(b) for b in prefix)))
     else:
       logging.debug('Entered promiscuous mode')
 
@@ -92,10 +92,10 @@ class nrf24:
 
   # Put the radio in ESB "sniffer" mode (ESB mode w/o auto-acking)
   def enter_sniffer_mode(self, address):
-    self.send_usb_command(ENTER_SNIFFER_MODE, [len(address)]+list(map(ord, address)))
+    self.send_usb_command(ENTER_SNIFFER_MODE, [len(address)]+list(address))
     self.dongle.read(0x81, 64, timeout=nrf24.usb_timeout)
     logging.debug('Entered sniffer mode with address {0}'.
-        format(':'.join('{:02X}'.format(ord(b)) for b in address[::-1])))
+        format(':'.join('{:02X}'.format(b) for b in address[::-1])))
 
   # Put the radio into continuous tone (TX) test mode
   def enter_tone_test_mode(self):

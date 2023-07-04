@@ -12,7 +12,8 @@ void enter_promiscuous_mode(uint8_t * prefix, uint8_t prefix_length)
   int x;
   for(x = 0; x < prefix_length; x++) pm_prefix[prefix_length - 1 - x] = prefix[x];
   pm_prefix_length = prefix_length > 5 ? 5 : prefix_length;
-  radio_mode = promiscuous;
+  radio_mode = myprom;
+  // radio_mode = myprom;
   pm_payload_length = 32;
 
   // CE low
@@ -261,9 +262,9 @@ void handle_radio_request(uint8_t request, uint8_t * data)
         if(value <= 32)
         {
           // Read the payload and write it to EP1
-          read_register(R_RX_PAYLOAD, &in1buf[1], value);
-          in1buf[0] = 0;
-          in1bc = value + 1;
+          read_register(R_RX_PAYLOAD, &in1buf[0], value);
+          // in1buf[0] = 0;
+          in1bc = value;
           flush_rx();
           return;
         }
@@ -344,6 +345,22 @@ void handle_radio_request(uint8_t request, uint8_t * data)
 
       // Generic promiscuous mode
       else if(radio_mode == promiscuous_generic)
+      {
+        int x;
+        uint8_t payload[37];
+
+        // Read in the "promiscuous" mode payload, concatenated to the prefix
+        for(x = 0; x < pm_prefix_length; x++) payload[pm_prefix_length - x - 1] = pm_prefix[x];
+        read_register(R_RX_PAYLOAD, &payload[pm_prefix_length], pm_payload_length);
+
+        // Write the payload to the output buffer
+        memcpy(in1buf, payload, pm_prefix_length + pm_payload_length);
+        in1bc = pm_prefix_length + pm_payload_length;
+        // flush_rx();
+        return;
+      }
+
+      else if(radio_mode == myprom) 
       {
         int x;
         uint8_t payload[37];

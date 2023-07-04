@@ -1,131 +1,116 @@
-#!/usr/bin/env python
-'''
-  Copyright (C) 2016 Bastille Networks
+#!/bin/env python
+import usb.core
+import usb.util
+import sys, time
 
-  This program is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
+USB_TIMEOUT = 2500
 
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+# USB Commands
+CMD_VERSION        = 0x01
+CMD_WRITE_INIT     = 0x02
+CMD_READ_FLASH     = 0x03
+CMD_ERASE_PAGE     = 0x04
+CMD_READ_DISABLE   = 0x05
+CMD_SELECT_FLASH_HALF   = 0x06
+CMD_RESET          = 0x07
 
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-'''
+IN_ENDPOINT_ADDR = 0x81
+OUT_ENDPOINT_ADDR = 0x01
+BLOCKS_PER_16K = 256 # 16kb / 64 byte blocks
+FLASH_BLOCK_SIZE = 64
+PAGE_SIZE = 512
 
+dev = usb.core.find(idVendor=0x1915, idProduct=0x0102)
+if dev:
+    print("Found device running nrf-research-firmware")
+    dev.write(OUT_ENDPOINT_ADDR, [0xFF], USB_TIMEOUT)
+    try: dev.reset()
+    except: 
+        time.sleep(1)
+        pass
 
-import usb, time, sys, array, logging
+dev = usb.core.find(idVendor=0x1915, idProduct=0x0101)
+if not dev:
+    print("Bootloader device not found")
+    quit()
+intf_num = dev[0].interfaces()[0].iInterface
+if dev.is_kernel_driver_active(intf_num):
+    dev.detach_kernel_driver(intf_num)
 
-# Setup logging
-logging.basicConfig(level=logging.INFO, format='[%(asctime)s.%(msecs)03d]  %(message)s', datefmt="%Y-%m-%d %H:%M:%S")
+def sendCommand(command, arg=None):
+    cmd = bytes([command])
+    if arg != None:
+        cmd = bytes([command, arg])
+    dev.write(CMD_VERSION, cmd)
 
-# Check pyusb dependency
-try:
-  from usb import core as _usb_core
-except ImportError as ex:
-  print('''
-------------------------------------------
-| PyUSB was not found or is out of date. |
-------------------------------------------
+def readResponse():
+    return bytes(dev.read(IN_ENDPOINT_ADDR, 64, USB_TIMEOUT))
 
-Please update PyUSB using pip:
+def getFirmwareVersion():
+    sendCommand(CMD_VERSION)
+    return readResponse()[0:2]
 
-sudo pip install -U -I pip && sudo pip install -U -I pyusb
-''')
-  sys.exit(1)
+def readFlash(kb=16):
+    flash = bytes()
+    sendCommand(CMD_SELECT_FLASH_HALF, 0)
+    readResponse()
+    for x in range(BLOCKS_PER_16K):
+        sendCommand(CMD_READ_FLASH, x)
+        flash += readResponse()
+    if kb == 32:
+        sendCommand(CMD_SELECT_FLASH_HALF, 1)
+        readResponse()
+        for x in range(BLOCKS_PER_16K):
+            sendCommand(CMD_READ_FLASH, x)
+            flash += readResponse()
+    return flash
 
-# USB timeout sufficiently long for operating in a VM
-usb_timeout = 2500
+def writeFlash(code, kb):
+    numPages = int(kb * 1024 / PAGE_SIZE)
+    for pageNum in range(numPages):
+        page = code[pageNum*PAGE_SIZE:(pageNum+1)*PAGE_SIZE]
+        if page.count(0xFF) == PAGE_SIZE:
+            continue
+        sendCommand(CMD_WRITE_INIT, pageNum)
+        readResponse()
+        for blockNum in range(int(PAGE_SIZE / FLASH_BLOCK_SIZE)):
+            dev.write(OUT_ENDPOINT_ADDR, page[blockNum*FLASH_BLOCK_SIZE:(blockNum+1)*FLASH_BLOCK_SIZE])
+            readResponse()
+    flash = readFlash(kb)
+    for pageNum in range(numPages):
+        page = code[pageNum*PAGE_SIZE:(pageNum+1)*PAGE_SIZE]
+        if page.count(0xFF) == PAGE_SIZE:
+            continue
+        if page != flash[pageNum*PAGE_SIZE:(pageNum+1)*PAGE_SIZE]:
+            print("Data mismatch at page: " + str(pageNum))
+            print(page.hex())
+            print(flash[pageNum*PAGE_SIZE:(pageNum+1)*PAGE_SIZE].hex())
+    print("Flash successful")
+    try: dev.reset()
+    except: pass
+
+try:     
+    version = getFirmwareVersion()
+    print("Bootloader Version: " + str(version[0]) + "." + str(version[1]))
+except:
+    pass
 
 # Verify that we received a command line argument
-if len(sys.argv) < 2:
-  print('Usage: ./usb-flash.py path-to-firmware.bin')
+if len(sys.argv) < 3:
+  print('Usage: ./flash.py path-to-firmware.bin kb')
   quit()
 
-# Read in the firmware
+# # Read in the firmware
 with open(sys.argv[1], 'rb') as f:
   data = f.read()
-
 # Zero pad the data to a multiple of 512 bytes
-data += b'\000' * (512 - len(data) % 512)
+if len(data) % PAGE_SIZE > 0: data += b'\xFF' * (PAGE_SIZE - len(data) % PAGE_SIZE)
+kb = int(len(data) / 1024)
+if (kb != 16 & kb != 32):
+    print("Flash file isn't 16 or 32 kb")
+    quit()
+if (kb != int(sys.argv[2])):
+    print("Flash file size does not match kb given on command line")
+    quit()
 
-# Find an attached device running CrazyRadio or RFStorm firmware
-logging.info("Looking for a compatible device that can jump to the Nordic bootloader")
-product_ids = [0x0102, 0x7777]
-for product_id in product_ids:
-
-  # Find a compatible device
-  try:
-    dongle = usb.core.find(idVendor=0x1915, idProduct=product_id)
-    dongle.set_configuration()
-  except AttributeError:
-    continue
-
-  # Device found, instruct it to jump to the Nordic bootloader
-  logging.info("Device found, jumping to the Nordic bootloader")
-  if product_id == 0x0102: dongle.write(0x01, [0xFF], timeout=usb_timeout)
-  else: dongle.ctrl_transfer(0x40, 0xFF, 0, 0, (), timeout=usb_timeout)
-  try: dongle.reset()
-  except: pass
-
-# Find an attached device running the Nordic bootloader, waiting up
-# to 1000ms to allow time for USB to reinitialize after the the
-# CrazyRadio or RFStorm firmware jumps to the bootloader
-logging.info("Looking for a device running the Nordic bootloader")
-start = time.time()
-while time.time() - start < 1:
-
-  # Find a devices running the Nordic bootloader
-  try:
-    dongle = usb.core.find(idVendor=0x1915, idProduct=0x0101)
-    dongle.set_configuration()
-    break
-  except AttributeError:
-    continue
-
-# Verify that we found a compatible device
-if not dongle:
-  logging.info("No compatbile device found")
-  raise Exception('No compatible device found.')
-
-# Write the data, one page at a time
-logging.info("Writing image to flash")
-page_count = len(data) // 512
-for page in range(page_count):
-
-  # Tell the bootloader that we are going to write a page
-  dongle.write(0x01, [0x02, page])
-  dongle.read(0x81, 64, usb_timeout)
-
-  # Write the page as 8 pages of 64 bytes
-  for block in range(8):
-
-    # Write the block
-    block_write = data[page*512+block*64:page*512+block*64+64]
-    dongle.write(0x01, block_write, usb_timeout)
-    dongle.read(0x81, 64, usb_timeout)
-
-# Verify that the image was written correctly, reading one page at a time
-logging.info("Verifying write")
-block_number = 0
-for page in range(page_count):
-
-  # Tell the bootloader that we are reading from the lower 16KB of flash
-  dongle.write(0x01, [0x06, 0], usb_timeout)
-  dongle.read(0x81, 64, usb_timeout)
-
-  # Read the page as 8 pages of 64 bytes
-  for block in range(8):
-
-    # Read the block
-    dongle.write(0x01, [0x03, block_number], usb_timeout)
-    block_read = dongle.read(0x81, 64, usb_timeout)
-    if block_read != array.array('B', data[block_number*64:block_number*64+64]):
-      raise Exception('Verification failed on page {0}, block {1}'.format(page, block))
-    block_number += 1
-
-logging.info("Firmware programming completed successfully")
-logging.info("\033[92m\033[1mPlease unplug your dongle or breakout board and plug it back in.\033[0m")
+writeFlash(data, kb)

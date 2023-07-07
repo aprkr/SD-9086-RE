@@ -38,7 +38,10 @@ inline void delay_us(uint16_t us) { do nop_us(); while(--us); }
 __sfr __at (0xE6) rfctl;          // ref: nRF24LU1+ Product Spec, Section 6.5.1, Table 20
 __sfr __at (0x90) rfcon;          // ref: nRF24LU1+ Product Spec, Section 6.5.1, Table 21
 __sfr __at (0xA0) usbcon;         // ref: nRF24LU1+ Product Spec, Section 7.3, Table 24
+__sfr __at (0xE8) AESCS;
+__sfr __at (0xF1) AESKIN;          // ref: nRF24LU1+ Product Spec, Section 8.2, Table 70
 __sfr __at (0xF2) AESIV;          // ref: nRF24LU1+ Product Spec, Section 8.2, Table 70
+__sfr __at (0xF3) AESD;          // ref: nRF24LU1+ Product Spec, Section 8.2, Table 70
 __sfr __at (0xF5) AESIA1;         // ref: nRF24LU1+ Product Spec, Section 8.2, Table 71
 __sfr __at (0x80) P0;             // ref: nRF24LU1+ Product Spec, Section 13.1, Table 94
 __sfr __at (0x94) P0DIR;          // ref: nRF24LU1+ Product Spec, Section 13.1, Table 95

@@ -4,6 +4,7 @@
 #include "usb.h"
 #include "radio.h"
 #include "nRF24LU1P.h"
+#include "private.h"
 
 // Enter ESB promiscuous mode
 void enter_promiscuous_mode(uint8_t * prefix, uint8_t prefix_length)
@@ -263,7 +264,28 @@ void handle_radio_request(uint8_t request, uint8_t * data)
         {
           // Read the payload and write it to EP1
           read_register(R_RX_PAYLOAD, &in1buf[0], value);
-          // in1buf[0] = 0;
+
+
+          for (uint8_t i = 0; i < 15; i++) {
+            AESKIN = 0x0;
+          }
+          AESKIN = AESKEY;
+
+          for (uint8_t i = 0; i < 15; i++) {
+            AESD = 0x0;
+          }
+          AESD = in1buf[11];
+          AESCS = 0b00010001;
+          while ((AESCS & 0b00000001) != 0) { }
+
+          for (uint8_t i = 15; i > 10; i--) {
+            in1buf[12] = AESD;
+          }
+          for (int8_t i = 10; i >= 0; i--) {
+            in1buf[i] ^= AESD;
+          }
+          
+          
           in1bc = value;
           flush_rx();
           return;

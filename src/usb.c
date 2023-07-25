@@ -53,15 +53,15 @@ bool init_usb()
 void usb_reset_config()
 {
   // Setup interrupts 
-  usbien = 0x11;  // USB reset and setup data valid
-  in_ien = 0x00;  // Disable EP IN interrupts
+  usbien = 0b10011;  // USB reset and setup data valid
+  in_ien = 0b100;  // Disable EP IN interrupts
   out_ien = 0x02; // Enable EP1 OUT interrupt
   ien1 = 0x10;    // Enable USB interrupt
   in_irq = 0x1F;  // Clear IN IRQ flags
   out_irq = 0x1F; // Clear OUT IRQ flags
   
   // Enable bulk EP1, disable ISO EPs
-  inbulkval = 0x02;
+  inbulkval = 0b110;
   outbulkval = 0x02;
   inisoval = 0x00;
   outisoval = 0x00;  
@@ -100,6 +100,16 @@ void usb_irq() __interrupt(12)  __using(1)
       out_irq = 0x02;
       out1bc = 0xFF;
       break;
+    default:
+      usbirq = 0x1F;
+      in_irq = 0x1F;
+      // in_irq = 0b100;
+      for (uint8_t i = 0; i < 8; i++) {
+        in2buf[i] = 0;
+      }
+      in2bc = 8;
+      break;
+
   }
 }
 
@@ -119,6 +129,30 @@ void write_device_string(const char * string)
 bool write_descriptor()
 {
   uint8_t desc_len = request->wLength;
+
+  if (request->bmRequestType == 0b10000001) {
+    for (uint8_t i = 0; i < 45; i++) {
+      in0buf[i] = usbHidReportDescriptor[i];
+    }
+    
+    // memcpy(in0buf, usbHidReportDescriptor, 45);
+    in0bc = 45;
+    return true;
+  }
+  switch(request->bRequest) {
+    case 0x01:
+      for (uint8_t i = 0; i < 8; i++) {
+        in0buf[i] = 0;
+      }
+      in0bc = 8;
+      return true;
+    case 0x02:
+      for (uint8_t i = 0; i < 8; i++) {
+        in0buf[i] = 0;
+      }
+      in0bc = 1;
+      return true;
+  }
 
   switch(request->wValue >> 8)
   {
@@ -140,7 +174,13 @@ bool write_descriptor()
     // - Language, Manufacturer, or Product
     case STRING_DESCRIPTOR:
        write_device_string(device_strings[setupbuf[2]]);
-       return true;   
+       return true; 
+
+    // case 0x22:
+    //   // if(desc_len > configuration_descriptor.hid_descriptor.wDescriptorLength) desc_len = configuration_descriptor.hid_descriptor.wDescriptorLength;
+    //   memcpy(in0buf, &usbHidReportDescriptor, 45);
+    //   in0bc = 45;
+    //   return true;
   }  
 
   // Not handled

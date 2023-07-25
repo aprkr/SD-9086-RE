@@ -78,6 +78,17 @@ typedef struct {
   uint8_t  bInterval; 
 } endpoint_descriptor_t;
 
+
+typedef struct {
+  uint8_t  bLength;
+  uint8_t  bDescriptorType;
+  uint16_t bcdHID; 
+  uint8_t  bCountryCode; 
+  uint8_t  bNumDescriptors; 
+  uint8_t  bReportDescriptorType; 
+  uint16_t  wDescriptorLength;
+} hid_descriptor_t;
+
 // Configuration descriptor, EP1 IN and EP1 OUT
 typedef struct {
   uint8_t  bLength;
@@ -90,7 +101,10 @@ typedef struct {
   uint8_t  bMaxPower; 
   interface_descriptor_t interface_descriptor; 
   endpoint_descriptor_t endpoint_1_in_descriptor; 
-  endpoint_descriptor_t endpoint_1_out_descriptor; 
+  endpoint_descriptor_t endpoint_1_out_descriptor;
+  interface_descriptor_t interface2_descriptor;
+  hid_descriptor_t hid_descriptor;
+  endpoint_descriptor_t endpoint_2_in_descriptor;
 } configuration_descriptor_t;
 
 // Device descriptor 
@@ -101,4 +115,6 @@ extern __code const configuration_descriptor_t configuration_descriptor;
 
 // Language, manufacturer, and product device strings
 extern __code char * device_strings[3];
+
+extern __code char usbHidReportDescriptor[45];
 

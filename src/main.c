@@ -31,6 +31,7 @@ void main()
   init_usb();
 
   // Flush the radio FIFOs
+  init_radio();
   flush_rx();
   flush_tx();
 

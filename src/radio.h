@@ -64,6 +64,14 @@ void spi_read(uint8_t command, uint8_t * buffer, uint8_t length);
 //   byte: value to write
 void write_register_byte(uint8_t reg, uint8_t byte);
 
+void set_channel(uint8_t channel);
+
+void init_radio();
+
+void set_address();
+
+void receive_packet();
+
 // Read a single byte register over SPI
 //   reg:    register to write to
 //   return: value read

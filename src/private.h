@@ -1,1 +1,3 @@
 #define AESKEY 0x00;
+uint8_t keyboard_address[5] = {0x00, 0x00, 0x00, 0x00, 0x00};
+uint8_t keyboard_channel = 00;

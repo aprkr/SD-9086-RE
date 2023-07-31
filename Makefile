@@ -32,16 +32,10 @@ clean:
 	rm -f bin/*
 
 install:
-	./prog/usb-flasher/usb-flash.py bin/dongle.bin
-
-spi_install:
-	./prog/teensy-flasher/python/spi-flash.py bin/dongle.bin
+	./prog/usb-flasher/usb-flash.py bin/dongle.formatted.bin
 
 arduino_install:
 	./prog/arduino-flasher/flash.py bin/dongle.formatted.bin
-
-logitech_install:
-	./prog/usb-flasher/logitech-usb-flash.py bin/dongle.formatted.bin bin/dongle.formatted.ihx
 
 bin/:
 	mkdir -p bin

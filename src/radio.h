@@ -72,6 +72,10 @@ void set_address();
 
 void receive_packet();
 
+void radio_irq() __interrupt(9)  __using(1);
+
+uint8_t static packet[12];
+
 // Read a single byte register over SPI
 //   reg:    register to write to
 //   return: value read

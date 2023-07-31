@@ -6,12 +6,19 @@
 #include "nRF24LU1P.h"
 #include "private.h"
 
+void radio_irq() __interrupt(9)  __using(1) {
+  ien0 = 0x00;
+  receive_packet();
+  ien0 = 0x80;
+}
+
 // Configure addressing on pipe 0
 void configure_address(uint8_t * address, uint8_t length)
 {
   write_register_byte(EN_RXADDR, ENRX_P0);
   write_register_byte(SETUP_AW, length - 2);
-  write_register(TX_ADDR, address, length); // needed?
+  uint8_t addr[5] = {0xC6, 0xC2, 0xC2, 0xC2, 0xC2};
+  write_register(TX_ADDR, &addr[0], 5);
   write_register(RX_ADDR_P0, address, length);
 }
 
@@ -20,7 +27,7 @@ void configure_mac(uint8_t feature, uint8_t dynpd, uint8_t en_aa)
 {
   write_register_byte(FEATURE, feature);
   write_register_byte(DYNPD, dynpd);
-  write_register_byte(EN_AA, en_aa);
+  write_register_byte(EN_AA, 1);
 }
 
 // Configure PHY layer on pipe 0
@@ -95,7 +102,7 @@ void set_address() {
   configure_mac(EN_DPL | EN_ACK_PAY, DPL_P0, ENAA_NONE);
 
   // 2Mbps data rate, enable RX, 16-bit CRC
-  configure_phy(EN_CRC | CRC0 | PRIM_RX | PWR_UP, RATE_2M, 0);
+  configure_phy(EN_CRC | CRC0 | PRIM_RX | PWR_UP | 0b00110000, RATE_2M, 0);
 
   // CE high
   rfce = 1;
@@ -108,58 +115,63 @@ void set_address() {
 void init_radio() {
   set_channel(keyboard_channel);
   set_address();
+  ien1 = 0b10010;
+  for (uint8_t i = 0; i < 15; i++) {
+    AESKIN = 0x0;
+  }
+  AESKIN = AESKEY;
+  for (uint8_t i = 0; i < 15; i++) {
+    AESD = 0x0;
+  }
 }
 
 void receive_packet() {
   uint8_t value;
-  uint8_t packet[13];
 
-  // Check if a payload is available
-  read_register(FIFO_STATUS, &value, 1);
-  if((value & 1) == 0)
+  read_register(R_RX_PL_WID, &value, 1);
+  if(value <= 32)
   {
-    // Get the payload width
-    read_register(R_RX_PL_WID, &value, 1);
-    if(value <= 32)
-    {
-      // Read the payload and write it to EP1
-      read_register(R_RX_PAYLOAD, &packet[0], value);
-
-
-      for (uint8_t i = 0; i < 15; i++) {
-        AESKIN = 0x0;
-      }
-      AESKIN = AESKEY;
-
-      for (uint8_t i = 0; i < 15; i++) {
-        AESD = 0x0;
-      }
-      AESD = packet[11];
-      AESCS = 0b00010001;
-      while ((AESCS & 0b00000001) != 0) { }
-
-      for (uint8_t i = 15; i > 10; i--) {
-        packet[12] = AESD;
-      }
-      for (int8_t i = 10; i >= 0; i--) {
-        packet[i] ^= AESD;
-      }
-      for (uint8_t i = 0; i < 8; i++) {
-        in2buf[i] = packet[i + 2];
-      }      
-      flush_rx();
-      return;
-    }
-    else
-    {
-      // Invalid payload width
-      flush_rx();
-      return;
-    }
+    // Read the payload and write it to EP1
+    read_register(R_RX_PAYLOAD, &packet[0], value);
     
+    AESD = packet[11];
+    AESCS = 0b00010001;
+    while ((AESCS & 0b00000001) != 0) { }
+    value = AESD;
+    value = AESD;
+    value = AESD;
+    value = AESD;
+    value = AESD;
+    value = AESD;
+
+    bool new_val = false;
+
+    for (int8_t i = 9; i >= 2; i--) {
+      value = packet[i] ^ AESD;
+      if (in2buf[i - 2] != value) {
+        new_val = true;
+      }
+      in2buf[i - 2] = value;
+    }
+
+    if (new_val == true) {
+      in2bc = 8;
+    }
+    value = AESD;
+    value = AESD;
+    for (uint8_t i = 0; i < 15; i++) {
+      AESD = 0x0;
+    }
+    write_register_byte(STATUS, 0b01111110);
+    flush_rx();
+
+    return;
   }
-  for (uint8_t i = 0; i < 8; i++) {
-    in2buf[i] = 0;
+  else
+  {
+    // Invalid payload width
+    flush_rx();
+    return;
   }
 }
 

@@ -21,7 +21,6 @@
 #include <stdio.h>
 
 #include "usb.h"
-#include "radio.h"
 
 // xdata mapped USB request setup buffer
 __xdata struct usb_request_t * request = (__xdata void*)setupbuf;
@@ -54,8 +53,8 @@ bool init_usb()
 void usb_reset_config()
 {
   // Setup interrupts 
-  usbien = 0b10011;  // USB reset and setup data valid
-  in_ien = 0b100;  // Disable EP IN interrupts
+  usbien = 0b10001;  // USB reset and setup data valid
+  in_ien = 0;  // Disable EP IN interrupts
   out_ien = 0x02; // Enable EP1 OUT interrupt
   ien1 = 0x10;    // Enable USB interrupt
   in_irq = 0x1F;  // Clear IN IRQ flags
@@ -101,17 +100,6 @@ void usb_irq() __interrupt(12)  __using(1)
       out_irq = 0x02;
       out1bc = 0xFF;
       break;
-    case 0x04:
-    case 0x28:
-      usbirq = 0b10;
-      in_irq = 0b100;
-      // for (uint8_t i = 0; i < 8; i++) {
-      //   in2buf[i] = 0;
-      // }
-      receive_packet();
-      in2bc = 8;
-      break;
-
   }
 }
 

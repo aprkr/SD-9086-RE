@@ -138,6 +138,8 @@ void receive_packet() {
         in3buf[0] = 1;
         in3bc = value;
       } else {
+        in3buf[0] = 2;
+        in3bc = value;
       }
       write_register_byte(STATUS, 0b01111110);
       return;

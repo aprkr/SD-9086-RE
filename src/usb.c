@@ -117,8 +117,11 @@ bool write_descriptor()
       memcpy(in0buf, usbHidReportDescriptor, configuration_descriptor.hid_descriptor.wDescriptorLength);
       in0bc = configuration_descriptor.hid_descriptor.wDescriptorLength;
     } else {
-      memcpy(in0buf, usbHidReportDescriptor2, configuration_descriptor.hid2_descriptor.wDescriptorLength);
-      in0bc = configuration_descriptor.hid2_descriptor.wDescriptorLength;
+      memcpy(in0buf, usbHidReportDescriptor2, 64);
+      in0bc = 64;
+      delay_us(100);
+      memcpy(in0buf, &usbHidReportDescriptor2[64], configuration_descriptor.hid2_descriptor.wDescriptorLength - 64);
+      in0bc = configuration_descriptor.hid2_descriptor.wDescriptorLength - 64;
     }
     return true;
   }

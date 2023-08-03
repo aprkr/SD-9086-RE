@@ -171,5 +171,20 @@ __code char usbHidReportDescriptor2[] = {
     0x75, 0x08,                    //   REPORT_SIZE (8)
     0x95, 0x01,                    //   REPORT_COUNT (1)
     0x81, 0x01,                    //   INPUT Cnst
+
+    0b10000101, 0x02,
+    0x05, 0x01,
+    0x15, 0x81,                    //   LOGICAL_MINIMUM (-127)
+    0x25, 0x7F,                    //   LOGICAL_MAXIMUM (128)
+    0x75, 0x08,                    //   REPORT_SIZE (8)
+    0x95, 0x02,                    //   REPORT_COUNT (1)
+    0x09, 0x30,                    // USAGE (X)
+    0x09, 0x31,                    // USAGE (Y)
+    0x81, 0x06,                    //   INPUT
+    0x75, 0x08,                    //   REPORT_SIZE (8)
+    0x95, 0x01,                    //   REPORT_COUNT (1)
+    0x81, 0x01,                    //   INPUT Cnst
+
+
     0xc0, 0xc0                         // END_COLLECTION
 };

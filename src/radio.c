@@ -160,7 +160,19 @@ void receive_packet() {
       packet[i] ^= AESD;
     }
     if (keyboard_checksum != packet[11]) {
+      if (packet[2] != 0 || packet[3] != 0) {
+        in3buf[0] = 3;
+        in3buf[1] = packet[3];
+        in3buf[2] = packet[2];
+        in3bc = 3;
+      }
       keyboard_checksum = packet[11];
+      if (packet[2] == 0 && packet[3] == 0) {
+        in3buf[0] = 3;
+        in3buf[1] = 0;
+        in3buf[2] = 0;
+        in3bc = 3;
+      }
       in2buf[0] = packet[1];
       in2buf[1] = 0;
       for (uint8_t i = 2; i < 8; i++) {

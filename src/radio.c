@@ -155,29 +155,24 @@ void receive_packet() {
     value = AESD;
     value = AESD;
     value = AESD;
-    value = AESD;
 
-    bool new_val = false;
-
-    for (int8_t i = 9; i >= 2; i--) {
-      value = packet[i] ^ AESD;
-      if (in2buf[i - 2] != value) {
-        new_val = true;
-      }
-      in2buf[i - 2] = value;
+    for (int8_t i = 10; i >= 0; i--) {
+      packet[i] ^= AESD;
     }
-
-    if (new_val == true) {
+    if (keyboard_checksum != packet[11]) {
+      keyboard_checksum = packet[11];
+      in2buf[0] = packet[1];
+      in2buf[1] = 0;
+      for (uint8_t i = 2; i < 8; i++) {
+        in2buf[i] = packet[i + 2];
+      }
       in2bc = 8;
     }
-    value = AESD;
-    value = AESD;
+
     for (uint8_t i = 0; i < 15; i++) {
       AESD = 0x0;
     }
     write_register_byte(STATUS, 0b01111110);
-    flush_rx();
-
     return;
   }
   else

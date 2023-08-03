@@ -187,4 +187,7 @@ __code char usbHidReportDescriptor2[] = {
 
 
     0xc0, 0xc0                         // END_COLLECTION
+
+    
+
 };

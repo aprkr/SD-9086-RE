@@ -76,6 +76,8 @@ void radio_irq() __interrupt(9)  __using(1);
 
 uint8_t static packet[12];
 
+uint8_t static keyboard_checksum = 0x00;
+
 // Read a single byte register over SPI
 //   reg:    register to write to
 //   return: value read

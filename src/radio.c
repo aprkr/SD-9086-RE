@@ -15,19 +15,20 @@ void radio_irq() __interrupt(9)  __using(1) {
 // Configure addressing on pipe 0
 void configure_address(uint8_t * address, uint8_t length)
 {
-  write_register_byte(EN_RXADDR, ENRX_P0);
+  write_register_byte(EN_RXADDR, ENRX_P0 | 0b10);
   write_register_byte(SETUP_AW, length - 2);
   uint8_t addr[5] = {0xC6, 0xC2, 0xC2, 0xC2, 0xC2};
   write_register(TX_ADDR, &addr[0], 5);
   write_register(RX_ADDR_P0, address, length);
+  write_register(RX_ADDR_P1, mouse_address, 5);
 }
 
 // Configure MAC layer functionality on pipe 0
 void configure_mac(uint8_t feature, uint8_t dynpd, uint8_t en_aa)
 {
   write_register_byte(FEATURE, feature);
-  write_register_byte(DYNPD, dynpd);
-  write_register_byte(EN_AA, 1);
+  write_register_byte(DYNPD, dynpd | 0b10);
+  write_register_byte(EN_AA, 0b11);
 }
 
 // Configure PHY layer on pipe 0
@@ -131,6 +132,16 @@ void receive_packet() {
   read_register(R_RX_PL_WID, &value, 1);
   if(value <= 32)
   {
+    if (value < 6) {
+      read_register(R_RX_PAYLOAD, &in3buf[0], value);
+      if (in3buf[0] == 0xF0) {
+        in3buf[0] = 1;
+        in3bc = value;
+      } else {
+      }
+      write_register_byte(STATUS, 0b01111110);
+      return;
+    }
     // Read the payload and write it to EP1
     read_register(R_RX_PAYLOAD, &packet[0], value);
     

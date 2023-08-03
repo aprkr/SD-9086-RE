@@ -71,6 +71,7 @@ __sbit __at (0xC0) RFRDY;         // ref: nRF24LU1+ Product Spec, Section 22.4.4
 #define in0bc      __xreg(0xC7B5) // ref: nRF24LU1+ Product Spec, Section 7.3, Table 26
 #define in1bc      __xreg(0xC7B7) // ref: nRF24LU1+ Product Spec, Section 7.3, Table 26
 #define in2bc      __xreg(0xC7B9) // ref: nRF24LU1+ Product Spec, Section 7.3, Table 26
+#define in3bc      __xreg(0xC7BB) // ref: nRF24LU1+ Product Spec, Section 7.3, Table 26
 #define ivec       __xreg(0xC7A8) // ref: nRF24LU1+ Product Spec, Section 7.3, Table 26
 #define in_irq     __xreg(0xC7A9) // ref: nRF24LU1+ Product Spec, Section 7.9.8, Table 42
 #define out_irq    __xreg(0xC7AA) // ref: nRF24LU1+ Product Spec, Section 7.9.9, Table 43
@@ -91,6 +92,7 @@ __sbit __at (0xC0) RFRDY;         // ref: nRF24LU1+ Product Spec, Section 22.4.4
 uint8_t __at (0xC700) in0buf[64];
 uint8_t __at (0xC680) in1buf[64];
 uint8_t __at (0xC600) in2buf[64];
+uint8_t __at (0xC580) in3buf[64];
 uint8_t __at (0xC640) out1buf[64];
 uint8_t __at (0xC7E8) setupbuf[8];
 

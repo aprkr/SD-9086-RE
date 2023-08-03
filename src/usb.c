@@ -61,7 +61,7 @@ void usb_reset_config()
   out_irq = 0x1F; // Clear OUT IRQ flags
   
   // Enable bulk EP1, disable ISO EPs
-  inbulkval = 0b110;
+  inbulkval = 0b1110;
   outbulkval = 0x00;
   inisoval = 0x00;
   outisoval = 0x00;  
@@ -113,12 +113,13 @@ bool write_descriptor()
   uint8_t desc_len = request->wLength;
 
   if (request->bmRequestType == 0b10000001) {
-    for (uint8_t i = 0; i < 45; i++) {
-      in0buf[i] = usbHidReportDescriptor[i];
+    if (request->wIndex == 1) {
+      memcpy(in0buf, usbHidReportDescriptor, configuration_descriptor.hid_descriptor.wDescriptorLength);
+      in0bc = configuration_descriptor.hid_descriptor.wDescriptorLength;
+    } else {
+      memcpy(in0buf, usbHidReportDescriptor2, configuration_descriptor.hid2_descriptor.wDescriptorLength);
+      in0bc = configuration_descriptor.hid2_descriptor.wDescriptorLength;
     }
-    
-    // memcpy(in0buf, usbHidReportDescriptor, 45);
-    in0bc = 45;
     return true;
   }
   switch(request->bRequest) {

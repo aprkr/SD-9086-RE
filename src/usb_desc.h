@@ -102,6 +102,9 @@ typedef struct {
   interface_descriptor_t interface2_descriptor;
   hid_descriptor_t hid_descriptor;
   endpoint_descriptor_t endpoint_2_in_descriptor;
+  interface_descriptor_t interface3_descriptor;
+  hid_descriptor_t hid2_descriptor;
+  endpoint_descriptor_t endpoint_3_in_descriptor;
 } configuration_descriptor_t;
 
 // Device descriptor 
@@ -115,3 +118,4 @@ extern __code char * device_strings[3];
 
 extern __code char usbHidReportDescriptor[];
 
+extern __code char usbHidReportDescriptor2[];

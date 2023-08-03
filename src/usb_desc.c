@@ -79,6 +79,37 @@ __code const configuration_descriptor_t configuration_descriptor =
     .wMaxPacketSize     = 8,   // 8 byte packet buffer
     .bInterval          = 10,
   },
+  .interface3_descriptor =
+  {
+    .bLength = 9,
+    .bDescriptorType = INTERFACE_DESCRIPTOR,
+    .bInterfaceNumber = 2,
+    .bAlternateSetting = 0,
+    .bNumEndpoints = 1,
+    .bInterfaceClass = 3,
+    .bInterfaceSubClass = 0,
+    .bInterfaceProtocol = 2,
+    .iInterface = 0,
+  },
+  .hid2_descriptor =
+  {
+    .bLength = 9,
+    .bDescriptorType = 0x21,
+    .bcdHID = 0x111,
+    .bCountryCode = 0,
+    .bNumDescriptors = 1,
+    .bReportDescriptorType = 0x22,
+    .wDescriptorLength = sizeof(usbHidReportDescriptor2),
+  },
+  .endpoint_3_in_descriptor = 
+  {
+    .bLength = 7,
+    .bDescriptorType = 5,
+    .bEndpointAddress = 0x83,
+    .bmAttributes = 3,
+    .wMaxPacketSize = 8,
+    .bInterval = 2,
+  }
 };
 
 // String descriptor values 
@@ -113,4 +144,32 @@ __code char usbHidReportDescriptor[] = {
     0x29, 0x65,                    //   USAGE_MAXIMUM (Keyboard Application)
     0x81, 0x00,                    //   INPUT (Data,Ary,Abs)
     0xc0,                          // END_COLLECTION
+};
+
+__code char usbHidReportDescriptor2[] = {
+    0x05, 0x01,                    // USAGE_PAGE (Generic Desktop)
+    0x09, 0x02,                    // USAGE (Keyboard)
+    0xa1, 0x01,                    // COLLECTION (Application)
+    0b10000101, 0x01,
+    0x09, 0x01,
+    0xa1, 0x00,
+    0x05, 0x09,
+    0x19, 0x01,
+    0x29, 0x03,
+    0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
+    0x25, 0x01,                    //   LOGICAL_MAXIMUM (1)
+    0x75, 0x01,                    //   REPORT_SIZE (1)
+    0x95, 0x08,                    //   REPORT_COUNT (8)
+    0x81, 0x02,                    //   INPUT
+    0x05, 0x01,
+    0x15, 0x81,                    //   LOGICAL_MINIMUM (-127)
+    0x25, 0x7F,                    //   LOGICAL_MAXIMUM (128)
+    0x75, 0x08,                    //   REPORT_SIZE (8)
+    0x95, 0x01,                    //   REPORT_COUNT (1)
+    0x09, 0x38,                    // USAGE (Wheel)
+    0x81, 0x06,                    //   INPUT
+    0x75, 0x08,                    //   REPORT_SIZE (8)
+    0x95, 0x01,                    //   REPORT_COUNT (1)
+    0x81, 0x01,                    //   INPUT Cnst
+    0xc0, 0xc0                         // END_COLLECTION
 };

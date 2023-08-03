@@ -164,14 +164,16 @@ void receive_packet() {
         in3buf[0] = 3;
         in3buf[1] = packet[3];
         in3buf[2] = packet[2];
-        in3bc = 3;
+        in3buf[3] = packet[2] >> 2;
+        in3bc = 4;
       }
       keyboard_checksum = packet[11];
       if (packet[2] == 0 && packet[3] == 0) {
         in3buf[0] = 3;
         in3buf[1] = 0;
         in3buf[2] = 0;
-        in3bc = 3;
+        in3buf[3] = 0;
+        in3bc = 4;
       }
       in2buf[0] = packet[1];
       in2buf[1] = 0;

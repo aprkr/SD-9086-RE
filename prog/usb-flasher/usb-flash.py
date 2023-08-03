@@ -23,10 +23,9 @@ PAGE_SIZE = 512
 dev = usb.core.find(idVendor=0x1915, idProduct=0x0102)
 if dev:
     print("Found device running nrf-research-firmware")
-    dev.write(OUT_ENDPOINT_ADDR, [0xFF], USB_TIMEOUT)
-    try: dev.reset()
-    except: 
-        time.sleep(1)
+    try: dev.ctrl_transfer(0xFF, 0xFF, 0xFF, 0xFF, [0xFF])
+    except:
+        time.sleep(2)
         pass
 
 dev = usb.core.find(idVendor=0x1915, idProduct=0x0101)

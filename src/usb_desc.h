@@ -99,9 +99,6 @@ typedef struct {
   uint8_t  iConfiguration;
   uint8_t  bmAttributes; 
   uint8_t  bMaxPower; 
-  interface_descriptor_t interface_descriptor; 
-  endpoint_descriptor_t endpoint_1_in_descriptor; 
-  endpoint_descriptor_t endpoint_1_out_descriptor;
   interface_descriptor_t interface2_descriptor;
   hid_descriptor_t hid_descriptor;
   endpoint_descriptor_t endpoint_2_in_descriptor;
@@ -116,5 +113,5 @@ extern __code const configuration_descriptor_t configuration_descriptor;
 // Language, manufacturer, and product device strings
 extern __code char * device_strings[3];
 
-extern __code char usbHidReportDescriptor[45];
+extern __code char usbHidReportDescriptor[];
 

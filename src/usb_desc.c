@@ -42,42 +42,12 @@ __code const configuration_descriptor_t configuration_descriptor =
 {
   .bLength                = 9,     // Size of the configuration descriptor
   .bDescriptorType        = CONFIGURATION_DESCRIPTOR,
-  .wTotalLength           = 57,    // Total size of the configuration descriptor and EP/interface descriptors 
-  .bNumInterfaces         = 2,     // Interface count
+  .wTotalLength           = sizeof(configuration_descriptor),    // Total size of the configuration descriptor and EP/interface descriptors 
+  .bNumInterfaces         = 1,     // Interface count
   .bConfigurationValue    = 1,     // Configuration identifer
   .iConfiguration         = 0,
   .bmAttributes           = 0xa0,  // Bus powered
   .bMaxPower              = 100,   // Max power of 100*2mA = 200mA 
-  .interface_descriptor = 
-    {
-      .bLength            = 9,    // Size of the interface descriptor 
-      .bDescriptorType    = INTERFACE_DESCRIPTOR,
-      .bInterfaceNumber   = 0,    // Interface index
-      .bAlternateSetting  = 0,   
-      .bNumEndpoints      = 2,    // 2 endpoints, EP1IN, EP1OUT
-      .bInterfaceClass    = 0xFF, // Vendor interface class
-      .bInterfaceSubClass = 0xFF, // Vendor interface subclass
-      .bInterfaceProtocol = 0xFF,
-      .iInterface         = 0,
-    },
-  .endpoint_1_in_descriptor = 
-    {
-      .bLength            = 7,    // Size of the endpoint descriptor 
-      .bDescriptorType    = ENDPOINT_DESCRIPTOR,
-      .bEndpointAddress   = 0x81, // EP1 IN
-      .bmAttributes       = 0x02, // Bulk EP
-      .wMaxPacketSize     = 64,   // 64 byte packet buffer
-      .bInterval          = 0, 
-    },
-  .endpoint_1_out_descriptor = 
-    {
-      .bLength            = 7,    // Size of the endpoint descriptor 
-      .bDescriptorType    = ENDPOINT_DESCRIPTOR,
-      .bEndpointAddress   = 0x01, // EP1 OUT
-      .bmAttributes       = 0x02, // Bulk EP
-      .wMaxPacketSize     = 64,   // 64 byte packet buffer
-      .bInterval          = 0,
-    },
   .interface2_descriptor = 
   {
     .bLength            = 9,    // Size of the interface descriptor 
@@ -98,7 +68,7 @@ __code const configuration_descriptor_t configuration_descriptor =
     .bCountryCode       = 0,   
     .bNumDescriptors    = 0x1, 
     .bReportDescriptorType    = 0x22, 
-    .wDescriptorLength  = 45,
+    .wDescriptorLength  = sizeof(usbHidReportDescriptor),
   },
   .endpoint_2_in_descriptor = 
   {
@@ -119,7 +89,7 @@ __code char * device_strings[3] =
   "Research Firmware", // Product
 };
 
-__code char usbHidReportDescriptor[45] = {
+__code char usbHidReportDescriptor[] = {
     0x05, 0x01,                    // USAGE_PAGE (Generic Desktop)
     0x09, 0x06,                    // USAGE (Keyboard)
     0xa1, 0x01,                    // COLLECTION (Application)

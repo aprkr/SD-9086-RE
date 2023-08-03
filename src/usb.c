@@ -55,14 +55,14 @@ void usb_reset_config()
   // Setup interrupts 
   usbien = 0b10001;  // USB reset and setup data valid
   in_ien = 0;  // Disable EP IN interrupts
-  out_ien = 0x02; // Enable EP1 OUT interrupt
+  out_ien = 0x0; // Enable EP1 OUT interrupt
   ien1 = 0x10;    // Enable USB interrupt
   in_irq = 0x1F;  // Clear IN IRQ flags
   out_irq = 0x1F; // Clear OUT IRQ flags
   
   // Enable bulk EP1, disable ISO EPs
   inbulkval = 0b110;
-  outbulkval = 0x02;
+  outbulkval = 0x00;
   inisoval = 0x00;
   outisoval = 0x00;  
 
@@ -72,7 +72,6 @@ void usb_reset_config()
   binstaddr = 16;
   bin1addr  = 32;
   bin2addr  = 64;
-  out1bc    = 0xFF;
 }
 
 // USB IRQ handler
@@ -92,13 +91,6 @@ void usb_irq() __interrupt(12)  __using(1)
     case 0x10:
       usb_reset_config();
       usbirq = 0x10;
-      break;
-
-    // EP1 out (request from host)
-    case 0x24:
-      handle_radio_request(out1buf[0], &out1buf[1]);
-      out_irq = 0x02;
-      out1bc = 0xFF;
       break;
   }
 }
@@ -228,6 +220,8 @@ void handle_setup_request()
       in0bc = 2;
       handled = true;
       break;
+    case 0xFF:
+      nordic_bootloader();
   }
 
   // Stall if the request wasn't handled

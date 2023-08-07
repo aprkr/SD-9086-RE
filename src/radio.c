@@ -165,7 +165,13 @@ void receive_packet() {
         in3buf[1] = packet[3];
         in3buf[2] = packet[2];
         in3buf[3] = packet[2] >> 2;
-        in3bc = 4;
+        if (in3buf[3] != 0) { // very sloppy, need to fix
+          in3buf[0] = 4;
+          in3buf[1] = in3buf[3];
+          in3bc = 2;
+        } else {
+          in3bc = 3;
+        }
       }
       keyboard_checksum = packet[11];
       if (packet[2] == 0 && packet[3] == 0) {

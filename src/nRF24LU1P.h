@@ -39,6 +39,8 @@ __sfr __at (0xE6) rfctl;          // ref: nRF24LU1+ Product Spec, Section 6.5.1,
 __sfr __at (0x90) rfcon;          // ref: nRF24LU1+ Product Spec, Section 6.5.1, Table 21
 __sfr __at (0xA0) usbcon;         // ref: nRF24LU1+ Product Spec, Section 7.3, Table 24
 __sfr __at (0xE8) AESCS;
+__sfr __at (0xA4) PWRDWN;
+__sfr __at (0xA5) WUCONF;
 __sfr __at (0xF1) AESKIN;          // ref: nRF24LU1+ Product Spec, Section 8.2, Table 70
 __sfr __at (0xF2) AESIV;          // ref: nRF24LU1+ Product Spec, Section 8.2, Table 70
 __sfr __at (0xF3) AESD;          // ref: nRF24LU1+ Product Spec, Section 8.2, Table 70

@@ -34,13 +34,11 @@ void main()
   init_radio();
   flush_rx();
   flush_tx();
+  WUCONF = 0b10001000;
 
   // Everything is triggered via interrupts, so now we wait
   while(1)
   {
-    REGXH = 0xFF;
-    REGXL = 0xFF;
-    REGXC = 0x08;
-    delay_us(1000);
+    PWRDWN = 0b00000111;
   }
 }

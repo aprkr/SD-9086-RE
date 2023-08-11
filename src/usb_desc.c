@@ -52,7 +52,7 @@ __code const configuration_descriptor_t configuration_descriptor =
   {
     .bLength            = 9,    // Size of the interface descriptor 
     .bDescriptorType    = INTERFACE_DESCRIPTOR,
-    .bInterfaceNumber   = 1,    // Interface index
+    .bInterfaceNumber   = 0,    // Interface index
     .bAlternateSetting  = 0,   
     .bNumEndpoints      = 1,    // EP2 IN
     .bInterfaceClass    = 0x3, // HID interface class
@@ -83,7 +83,7 @@ __code const configuration_descriptor_t configuration_descriptor =
   {
     .bLength = 9,
     .bDescriptorType = INTERFACE_DESCRIPTOR,
-    .bInterfaceNumber = 2,
+    .bInterfaceNumber = 1,
     .bAlternateSetting = 0,
     .bNumEndpoints = 1,
     .bInterfaceClass = 3,

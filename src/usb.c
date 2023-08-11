@@ -114,7 +114,7 @@ bool write_descriptor()
   uint8_t desc_len = request->wLength;
 
   if (request->bmRequestType == 0b10000001) {
-    if (request->wIndex == 1) {
+    if (request->wIndex == 0) {
       memcpy(in0buf, usbHidReportDescriptor, configuration_descriptor.hid_descriptor.wDescriptorLength);
       in0bc = configuration_descriptor.hid_descriptor.wDescriptorLength;
     } else {

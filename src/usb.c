@@ -91,6 +91,7 @@ void usb_irq() __interrupt(12)  __using(1)
     case 0x10:
       usb_reset_config();
       usbirq = 0x10;
+      ien1 = 0b10010;
       break;
   }
 }

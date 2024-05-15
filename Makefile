@@ -1,11 +1,11 @@
 SDCC ?= sdcc
-FLASH_SIZE ?= 32
-ifeq ($(FLASH_SIZE), 16)
-    CFLAGS = --model-large --std-sdcc99 -DFLASH_SIZE_16K
-    BIN_SIZE = 16384
-else
+FLASH_SIZE ?= 16
+ifeq ($(FLASH_SIZE), 32)
     CFLAGS = --model-large --std-sdcc99
     BIN_SIZE = 32768
+else
+	CFLAGS = --model-large --std-sdcc99 -DFLASH_SIZE_16K
+    BIN_SIZE = 16384
 endif
 LDFLAGS = --xram-loc 0x8000 --xram-size 2048 --model-large
 VPATH = src/
@@ -31,10 +31,10 @@ dongle.bin: $(OBJS)
 clean:
 	rm -f bin/*
 
-install:
-	./prog/usb-flasher/usb-flash.py bin/dongle.formatted.bin
+install: dongle.bin
+	sudo ./prog/usb-flasher/usb-flash.py bin/dongle.formatted.bin $(FLASH_SIZE)
 
-arduino_install:
+arduino_install: dongle.bin
 	./prog/arduino-flasher/flash.py bin/dongle.formatted.bin
 
 bin/:

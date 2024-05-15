@@ -20,7 +20,7 @@
 #include "radio.h"
 
 // Program entry point
-void main()
+void main(void)
 {
   rfcon = 0x06; // enable RF clock
   rfctl = 0x10; // enable SPI

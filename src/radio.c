@@ -6,7 +6,7 @@
 #include "nRF24LU1P.h"
 #include "private.h"
 
-void radio_irq() __interrupt(9)  __using(1) {
+void radio_irq(void) __interrupt(9)  __using(1) {
   ien0 = 0x00;
   receive_packet();
   ien0 = 0x80;
@@ -92,7 +92,7 @@ void set_channel(uint8_t channel) {
   return;
 }
 
-void set_address() {
+void set_address(void) {
 
   // CE low
   rfce = 0;
@@ -113,7 +113,7 @@ void set_address() {
   flush_tx();
 }
 
-void init_radio() {
+void init_radio(void) {
   set_channel(keyboard_channel);
   set_address();
   ien1 = 0b10010;
@@ -126,7 +126,7 @@ void init_radio() {
   }
 }
 
-void receive_packet() {
+void receive_packet(void) {
   uint8_t value;
 
   read_register(R_RX_PL_WID, &value, 1);
@@ -202,15 +202,3 @@ void receive_packet() {
     return;
   }
 }
-
-// Handle a USB radio request
-void handle_radio_request(uint8_t request, uint8_t * data)
-{
-  // Enter the Nordic bootloader
-  if(request == LAUNCH_NORDIC_BOOTLOADER)
-  {
-    nordic_bootloader();
-    return;
-  }
-}
-

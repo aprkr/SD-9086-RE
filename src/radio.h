@@ -19,17 +19,6 @@
 #include <stdint.h>
 #include "nRF24LU1P.h"
 
-// Enter ESB promiscuous mode
-//   prefix:        address prefix; used for vendors with fixed start of address bytes
-//   prefix_length: prefix length, in bytes
-void enter_promiscuous_mode(uint8_t * prefix, uint8_t prefix_length);
-
-// Enter generic promiscuous mode
-//   prefix:        address prefix; used for vendors with fixed start of address bytes
-//   prefix_length: prefix length, in bytes
-//   rate:          data rate (0=250K, 1=1M, 2=2M)
-void enter_promiscuous_mode_generic(uint8_t * prefix, uint8_t prefix_length, uint8_t rate, uint8_t payload_length);
-
 // Configure addressing on pipe 0
 //   address: address bytes
 //   length:  address length
@@ -66,13 +55,13 @@ void write_register_byte(uint8_t reg, uint8_t byte);
 
 void set_channel(uint8_t channel);
 
-void init_radio();
+void init_radio(void);
 
-void set_address();
+void set_address(void);
 
-void receive_packet();
+void receive_packet(void);
 
-void radio_irq() __interrupt(9)  __using(1);
+void radio_irq(void) __interrupt(9)  __using(1);
 
 uint8_t static packet[12];
 
@@ -100,37 +89,3 @@ uint8_t read_register_byte(uint8_t reg);
 
 // Flush the TX FIFO
 #define flush_tx() spi_write(FLUSH_TX,NULL,0)
-
-// Update a CRC16-CCITT with 1-8 bits from a given byte
-//   crc:    current CRC
-//   byte:   new byte
-//   bits:   number of bits to process from byte
-//   return: updated CRC
-uint16_t crc_update(uint16_t crc, uint8_t byte, uint8_t bits);
-
-// Default promiscuous mode address
-__xdata static const uint8_t promiscuous_address[2] = { 0xAA, 0x00 };
-
-// Radio mode
-enum radio_mode_t
-{
-  // ESB sniffer mode
-  sniffer = 0,
-
-  // ESB promiscuous mode
-  promiscuous = 1,
-
-  // Generic promiscuous mode
-  promiscuous_generic = 2,
-
-  // my prom
-  myprom = 3,
-};
-
-// Radio mode
-__xdata static uint8_t radio_mode;
-
-// Promiscuous mode state
-__xdata static int pm_prefix_length;      // Promixcuous mode address prefix length
-__xdata static uint8_t pm_prefix[5];      // Promixcuous mode address prefix
-__xdata static uint8_t pm_payload_length; // Promiscuous mode payload length

@@ -26,28 +26,25 @@
 #endif
 
 // Nordic nootloader entry point
-static void (*nordic_bootloader)() = (void (*)()) NORDIC_BOOTLOADER_START_ADDR;
-
-// Logitech nootloader entry point
-static void (*logitech_bootloader)() = (void (*)())0x7400;
+static void (*nordic_bootloader)(void) = (void (*)()) NORDIC_BOOTLOADER_START_ADDR;
 
 // USB configured state
 static bool configured;
 
 // Initialize the USB configuraiton
-bool init_usb();
+bool init_usb(void);
 
 // Handle a USB setup request
-void handle_setup_request();
+void handle_setup_request(void);
 
 // Reset the USB configuration
-void usb_reset_config();
+void usb_reset_config(void);
 
 // Handle a USB radio request
 void handle_radio_request(uint8_t request, uint8_t * data);
 
 // USB IRQ handler
-void usb_irq() __interrupt(12)  __using(1);
+void usb_irq(void) __interrupt(12)  __using(1);
 
 // USB request
 struct usb_request_t
@@ -68,19 +65,4 @@ enum usb_request_type_t
   GET_CONFIGURATION = 8,
   SET_CONFIGURATION = 9,
 };
-
-//Vendor control messages and commands
-#define TRANSMIT_PAYLOAD               0x04
-#define ENTER_SNIFFER_MODE             0x05
-#define ENTER_PROMISCUOUS_MODE         0x06
-#define ENTER_TONE_TEST_MODE           0x07
-#define TRANSMIT_ACK_PAYLOAD           0x08
-#define SET_CHANNEL                    0x09
-#define GET_CHANNEL                    0x0A
-#define ENABLE_LNA                     0x0B
-#define TRANSMIT_PAYLOAD_GENERIC       0x0C
-#define ENTER_PROMISCUOUS_MODE_GENERIC 0x0D
-#define RECEIVE_PACKET                 0x12
-#define LAUNCH_LOGITECH_BOOTLOADER     0xFE
-#define LAUNCH_NORDIC_BOOTLOADER       0xFF
 

@@ -26,7 +26,7 @@
 __xdata struct usb_request_t * request = (__xdata void*)setupbuf;
 
 // Initialize the USB configuraiton 
-bool init_usb() 
+bool init_usb(void) 
 {
   uint16_t ms_elapsed = 0; 
   configured = false;
@@ -50,7 +50,7 @@ bool init_usb()
 }
 
 // Reset the USB configuration
-void usb_reset_config()
+void usb_reset_config(void)
 {
   // Setup interrupts 
   usbien = 0b10001;  // USB reset and setup data valid
@@ -75,7 +75,7 @@ void usb_reset_config()
 }
 
 // USB IRQ handler
-void usb_irq() __interrupt(12)  __using(1)
+void usb_irq(void) __interrupt(12)  __using(1)
 {
   // Which IRQ? 
   // ref: nRF24LU1+ Product Spec, Section 7.8.3, Table 34
@@ -109,7 +109,7 @@ void write_device_string(const char * string)
 }
 
 // Write a descriptor (as specified in the current request) to EP0
-bool write_descriptor()
+bool write_descriptor(void)
 {
   uint8_t desc_len = request->wLength;
 
@@ -175,7 +175,7 @@ bool write_descriptor()
 }
 
 // Handle a USB setup request 
-void handle_setup_request()
+void handle_setup_request(void)
 {
   bool handled = false;
   switch(request->bRequest)

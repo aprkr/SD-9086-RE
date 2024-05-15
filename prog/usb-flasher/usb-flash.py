@@ -20,13 +20,21 @@ BLOCKS_PER_16K = 256 # 16kb / 64 byte blocks
 FLASH_BLOCK_SIZE = 64
 PAGE_SIZE = 512
 
-dev = usb.core.find(idVendor=0x1915, idProduct=0x0102)
+dev = usb.core.find(idVendor=0x1915, idProduct=0x0103)
 if dev:
-    print("Found device running nrf-research-firmware")
+    print("Found device running SD-9086-RE firmware")
     try: dev.ctrl_transfer(0xFF, 0xFF, 0xFF, 0xFF, [0xFF])
     except:
         time.sleep(2)
         pass
+else:
+    dev = usb.core.find(idVendor=0x1915, idProduct=0x0102)
+    if dev:
+        print("Found device running nrf-research-firmware")
+        dev.write(OUT_ENDPOINT_ADDR, [0xFF], USB_TIMEOUT)
+        try: dev.reset()
+        except: 
+            time.sleep(1)
 
 dev = usb.core.find(idVendor=0x1915, idProduct=0x0101)
 if not dev:

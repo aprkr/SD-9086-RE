@@ -6,10 +6,10 @@
 #include "nRF24LU1P.h"
 #include "private.h"
 
+bool media_key = false;
+
 void radio_irq(void) __interrupt(9)  __using(1) {
-  ien0 = 0x00;
   receive_packet();
-  ien0 = 0x80;
 }
 
 // Configure addressing on pipe 0
@@ -134,10 +134,10 @@ void receive_packet(void) {
   {
     if (value < 6) {
       read_register(R_RX_PAYLOAD, &in3buf[0], value);
-      if (in3buf[0] == 0xF0) {
+      if (in3buf[0] == 0xF0) { // Mouse buttons and scroll
         in3buf[0] = 1;
         in3bc = value;
-      } else {
+      } else { // Mouse X and Y
         in3buf[0] = 2;
         in3bc = value;
       }
@@ -159,28 +159,31 @@ void receive_packet(void) {
     for (int8_t i = 10; i >= 0; i--) {
       packet[i] ^= AESD;
     }
-    if (keyboard_checksum != packet[11]) {
+    if (keyboard_checksum != packet[10]) {
       if (packet[2] != 0 || packet[3] != 0) {
-        in3buf[0] = 3;
-        in3buf[1] = packet[3];
-        in3buf[2] = packet[2];
         in3buf[3] = packet[2] >> 2;
-        if (in3buf[3] != 0) { // very sloppy, need to fix
+        if (in3buf[3] != 0) {
           in3buf[0] = 4;
           in3buf[1] = in3buf[3];
           in3bc = 2;
         } else {
+          media_key = true;
+          in3buf[0] = 3;
+          in3buf[1] = packet[3];
+          in3buf[2] = packet[2];
           in3bc = 3;
         }
-      }
-      keyboard_checksum = packet[11];
-      if (packet[2] == 0 && packet[3] == 0) {
-        in3buf[0] = 3;
+      } else if (media_key) {
+        media_key = false;
+        in3buf[0] = 3; // Send empty packet
         in3buf[1] = 0;
         in3buf[2] = 0;
         in3buf[3] = 0;
         in3bc = 4;
       }
+      keyboard_checksum = packet[10];
+      
+      // Regular keystroke
       in2buf[0] = packet[1];
       in2buf[1] = 0;
       for (uint8_t i = 2; i < 8; i++) {
@@ -189,7 +192,7 @@ void receive_packet(void) {
       in2bc = 8;
     }
 
-    for (uint8_t i = 0; i < 15; i++) {
+    for (uint8_t i = 0; i < 15; i++) { // Reset AES input
       AESD = 0x0;
     }
     write_register_byte(STATUS, 0b01111110);

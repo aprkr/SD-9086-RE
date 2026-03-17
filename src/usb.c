@@ -41,6 +41,13 @@ bool init_usb(void)
 
   // Set the default configuration 
   usb_reset_config();
+  
+  // Startup dir is general I/O input
+  // If both D0 (SSCK) and D1 (SMOSI) are low, jump to bootloader
+  // I chose low since reset for P0 is 0xFF
+  if ((P0 & 0b11) == 0b00) {
+    nordic_bootloader();
+  }
 
   // Wait for the USB controller to reach the configured state
   while(!configured);
